@@ -1,7 +1,7 @@
 
 import { Octokit } from "octokit"
 import axios from 'axios';
-import { aiSummariseCommit } from "./hunyuanAi";
+import { aiSummariseCommit } from "./gemini";
 import { db } from "@/server/db";
 
 
