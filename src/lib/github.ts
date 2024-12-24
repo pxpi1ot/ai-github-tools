@@ -1,7 +1,7 @@
 
 import { Octokit } from "octokit"
 import axios from 'axios';
-import { aiSummariseCommit } from "./gemini";
+import { aiSummariseCommit } from "./hunyuanAi";
 import { db } from "@/server/db";
 
 
@@ -19,14 +19,14 @@ type Response = {
     commitAuthorAvatar: string
     commitDate: string
 }
-/*  获取github数据 */
+
 export const getCommitHashes = async (githubUrl: string): Promise<Response[]> => {
 
     const [owner, repo] = githubUrl.split('/').slice(-2)
     if (!owner || !repo) {
         throw new Error("无效的github url")
     }
-
+    /*  获取github数据 */
     const { data } = await octokit.rest.repos.listCommits({
         owner,
         repo
@@ -44,7 +44,6 @@ export const getCommitHashes = async (githubUrl: string): Promise<Response[]> =>
 
 /* 获取项目的GithubUrl */
 const fetchProjectGithubUrl = async (projectId: string) => {
-    console.log(`projectId:${projectId} `)
     const project = await db.project.findUnique({
         where: { id: projectId },
         select: {
@@ -77,6 +76,12 @@ const summariseCommit = async (githubUrl: string, commitHash: string) => {
         }
     })
 
+    if (!data) {
+        console.log(`${commitHash}的 git diff 为空`)
+
+        return ""
+    }
+
     return await aiSummariseCommit(data) || ""
 }
 
@@ -98,7 +103,6 @@ export const pollCommits = async (projectId: string) => {
 
     const commits = await db.commit.createMany({
         data: summarise.map((summary, index) => {
-            console.log(`commit${index}`)
             return {
                 projectId: projectId,
                 commitHash: unprocessedCommits[index]!.commitHash,
