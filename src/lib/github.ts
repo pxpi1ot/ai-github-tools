@@ -1,6 +1,8 @@
-import { db } from "@/server/db"
-import { Octokit } from "octokit"
 
+import { Octokit } from "octokit"
+import axios from 'axios';
+import { aiSummariseCommit } from "./gemini";
+import { db } from "@/server/db";
 
 
 
@@ -42,6 +44,7 @@ export const getCommitHashes = async (githubUrl: string): Promise<Response[]> =>
 
 /* 获取项目的GithubUrl */
 const fetchProjectGithubUrl = async (projectId: string) => {
+    console.log(`projectId:${projectId} `)
     const project = await db.project.findUnique({
         where: { id: projectId },
         select: {
@@ -66,9 +69,15 @@ const filterUnprocessedCommits = async (projectId: string, commitHashes: Respons
 
     return unprocessedCommits
 }
-
+/* 获取ai总结 */
 const summariseCommit = async (githubUrl: string, commitHash: string) => {
+    const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
+        headers: {
+            Accept: 'application/vnd.github.v3.diff'
+        }
+    })
 
+    return await aiSummariseCommit(data) || ""
 }
 
 export const pollCommits = async (projectId: string) => {
@@ -77,11 +86,34 @@ export const pollCommits = async (projectId: string) => {
     /* 未保存在数据库的commit */
     const unprocessedCommits = await filterUnprocessedCommits(projectId, commitHashes)
 
+    const summaryRes = await Promise.allSettled(unprocessedCommits.map(commit => {
+        return summariseCommit(githubUrl, commit.commitHash)
+    }))
+    const summarise = summaryRes.map(response => {
+        if (response.status === "fulfilled") {
+            return response.value as string
+        }
+        return ""
+    })
 
-    return unprocessedCommits
+    const commits = await db.commit.createMany({
+        data: summarise.map((summary, index) => {
+            console.log(`commit${index}`)
+            return {
+                projectId: projectId,
+                commitHash: unprocessedCommits[index]!.commitHash,
+                commitMessage: unprocessedCommits[index]!.commitMessage,
+                commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
+                commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
+                commitDate: unprocessedCommits[index]!.commitDate,
+                summary
+            }
+        })
+    })
+
+    return commits
 }
 
 
 
 
-await pollCommits('cm50lti1200006pumvxjs66s0').then(console.log)

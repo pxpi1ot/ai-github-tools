@@ -32,21 +32,21 @@ const items = [
     url: "/dashboard",
     icon: LayoutDashboardIcon,
   },
-  {
-    title: "AI 对话",
-    url: "/qa",
-    icon: BotIcon,
-  },
-  {
-    title: "会议列表",
-    url: "/meetings",
-    icon: PresentationIcon,
-  },
-  {
-    title: "充值套餐",
-    url: "/billing",
-    icon: CreditCardIcon,
-  },
+  // {
+  //   title: "AI 对话",
+  //   url: "/qa",
+  //   icon: BotIcon,
+  // },
+  // {
+  //   title: "会议列表",
+  //   url: "/meetings",
+  //   icon: PresentationIcon,
+  // },
+  // {
+  //   title: "充值套餐",
+  //   url: "/billing",
+  //   icon: CreditCardIcon,
+  // },
 ];
 
 export const AppSidebar = () => {
@@ -89,7 +89,7 @@ export const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {projects?.map((project) => (
-                <SidebarMenuItem className="pl-1" key={project.name}>
+                <SidebarMenuItem className="pl-1" key={project.id}>
                   <SidebarMenuButton
                     asChild
                     className={cn(

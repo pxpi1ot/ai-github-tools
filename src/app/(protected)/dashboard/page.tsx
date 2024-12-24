@@ -4,6 +4,8 @@ import { useProject } from "@/hooks/use-project";
 import { useUser } from "@clerk/nextjs";
 import { ExternalLinkIcon, GithubIcon } from "lucide-react";
 import Link from "next/link";
+import { CommitLog } from "./commit-log";
+import { AskQuestionCard } from "./ask-question-card";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -24,22 +26,28 @@ const DashboardPage = () => {
                   className="inline-flex items-center text-white/80 hover:underline"
                 >
                   {project?.githubUrl}
-                  <ExternalLinkIcon className="ml-1 size-4" />
+                  <ExternalLinkIcon className="ml-1 size-3" />
                 </Link>
               </p>
             </div>
           </div>
         </div>
-        <div className="mt-4 flex items-center gap-4">
+        {/* <div className="mt-4 flex items-center gap-4">
           TeamMembers InviteButton ArchiveButton
+        </div> */}
+      </div>
+
+      {/* <div className="mt-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        2:44:16
+          <AskQuestionCard />
+          MeetingCard
         </div>
-      </div>
+      </div> */}
 
-      <div className="mt-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">askQuestion</div>
+      <div className="mt-8">
+        <CommitLog />
       </div>
-
-      <div className="mt-8">commitlog</div>
     </div>
   );
 };
